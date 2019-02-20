@@ -34,17 +34,26 @@ def hex2bin(argument):
     } 
     return switcher.get(argument, "nothing") 
 
-## DONE: Create a table for all instruction opcodes (make a function like hex2bin perhaps?)
+## Table for all instruction opcodes 
 def getInstr(argument): 
     switcher = { 
         "001000": "addi",
+        "100001": "addu",
         "101011": "sw",
         "100000": "add",
         "101010": "slt",
+        "100100": "and",
+        "100101": "or",
+        "000000": "sll",
+        "000010": "srl",
+        "100110": "xor",
+        "000100": "beq",
+        "000101": "bne",
+        "100011": "lw",
     } 
     return switcher.get(argument, "nothing") 
 
-## DONE: Create a table for all instruction registers (make a function like hex2bin perhaps?)
+## Table for all instruction registers 
 def dec2regi(argument): 
     switcher = { 
         '0': "$0",
@@ -81,27 +90,6 @@ def dec2regi(argument):
         '31': "$ra",
     } 
     return switcher.get(str(argument), "nothing") 
-
-def getBin(number):
-    switcher = {
-        '0000' : "0",
-        '0001' : "1",
-        '0010' : "2",
-        '0011' : "3",
-        '0100' : "4",
-        '0101' : "5",
-        '0110' : "6",
-        '0111' : "7",
-        '1000' : "8",
-        '1001' : "9",
-        '1010' : "a",
-        '1011' : "b",
-        '1100' : "c",
-        '1101' : "d",
-        '1110' : "e",
-        '1111' : "f"
-    }
-    return switcher.get(number)
 
 for line in iFile:
     word = word + line[2:10]        # get each line, but ignore 0x
