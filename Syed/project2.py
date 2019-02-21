@@ -112,16 +112,20 @@ def Simulate():
 
         op = binary[0:6]
 
-        if (op == "000000"):        # translate for add
+        if (op == "000000"):        # translate for add, addu
             rs = binary[6:11]
             rt = binary[11:16]
             rd = binary[16:21]
             shamt = binary[21:26]
             funct = binary[26:32]
-
+            opCode = getInstr(funct)
             # funct rd, rs, rt
-            newLine = getInstr(funct) + " " + dec2regi(int(rd, 2)) + ", " + dec2regi(int(rs, 2)) + ", " + dec2regi(int(rt, 2))
+            newLine = opCode + " " + dec2regi(int(rd, 2)) + ", " + dec2regi(int(rs, 2)) + ", " + dec2regi(int(rt, 2))
             oFile.write(newLine)
+            #updates the registers
+            if (opCode == "addu"):
+                Register[int(rd,2)] = Register[int(rs,2)] + Register[int(rt,2)]
+
         elif (op == "100011" or op == "101011"):      # translate lw or sw
             rs = binary[6:11]
             rt = binary[11:16]
@@ -148,13 +152,15 @@ def Simulate():
             # op rt, rs, imm
             newLine = opCode + " " + dec2regi(int(rt, 2)) + ", " + dec2regi(int(rs, 2)) + ", " + str(getTwosComp(imm))
             oFile.write(newLine)
+            #updates the registers
             if ( opCode == "addi"):
                 Register[int(rt,2)] = Register[int(rs,2)] + int(imm,2)
 
         word = ""
         binary = ""
         oFile.write("\n")
-  #oFile.close()
+    oFile.close()
+    #prints the register contents
     print("Registers contents:", Register)
 def main():
 
