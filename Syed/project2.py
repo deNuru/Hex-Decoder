@@ -112,7 +112,7 @@ def Simulate():
 
         op = binary[0:6]
 
-        if (op == "000000"):        # translate for add, addu, sub, slt
+        if (op == "000000"):        # translate for add, addu, sub, slt, sll
             rs = binary[6:11]
             rt = binary[11:16]
             rd = binary[16:21]
@@ -132,6 +132,8 @@ def Simulate():
                     Register[int(rd,2)] = 1
                 else:
                     Register[int(rd,2)] = 0
+            if (opCode == "sll"): #this doesnot work right for some reason, need a fix
+                Register[int(rd,2)] = Register[int(rt,2)] << int(shamt,2)
 
         elif (op == "100011" or op == "101011"):      # translate lw or sw
             rs = binary[6:11]
@@ -151,7 +153,7 @@ def Simulate():
             newLine = getInstr(op) + " " + dec2regi(int(rt, 2)) + ", " + dec2regi(int(rs, 2)) + ", " + str(getTwosComp(imm))
             oFile.write(newLine)
 
-        else:                   # translate for addi
+        else:                   # translate for addi, ori
             rs = binary[6:11]
             rt = binary[11:16]
             imm = binary[16:32]
@@ -162,6 +164,8 @@ def Simulate():
             #updates the registers
             if ( opCode == "addi"):
                 Register[int(rt,2)] = Register[int(rs,2)] + int(imm,2)
+            if(opCode == "ori"):
+                Register[int(rt,2)] = Register[int(rs,2)] | int(imm,2)
 
         word = ""
         binary = ""
