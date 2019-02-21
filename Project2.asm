@@ -1,5 +1,5 @@
 # PART A
-addi $8, $0, 49152 # initial seed
+addi $8, $0, 65544 # initial seed
 addi $9, $0, 16 # numS = 16
 addi $10,$0, 0 # increment address by 4 bytes
 addi $13, $0, 0 # ctr = 0

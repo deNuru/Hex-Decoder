@@ -69,27 +69,28 @@ def dec2regi(argument):
         '10': "$10",
         '11': "$11",
         '12': "$12",
-        '13': "$t5",
-        '14': "$t6",
-        '15': "$t7",
-        '16': "$s0",
-        '17': "$s1",
-        '18': "$s2",
-        '19': "$s3",
-        '20': "$s4",
-        '21': "$s5",
-        '22': "$s6",    
-        '23': "$s7",
-        '24': "$t8",
-        '25': "$t9",
-        '26': "$k0",
-        '27': "$k1",
-        '28': "$gp",
-        '29': "$sp",
-        '30': "$fp",
-        '31': "$ra",
+        '13': "$13",
+        '14': "$14",
+        '15': "$15",
+        '16': "$16",
+        '17': "$17",
+        '18': "$18",
+        '19': "$19",
+        '20': "$20",
+        '21': "$21",
+        '22': "$22",    
+        '23': "$23",
     } 
     return switcher.get(str(argument), "nothing") 
+
+## Two's complement
+def getTwosComp(argument):
+    if (argument[0] == '1'):
+        val = 65535 - int(argument, 2) + 1
+        val = -val
+    else:
+        val = int(argument, 2)
+    return val
 
 for line in iFile:
     word = word + line[2:10]        # get each line, but ignore 0x
@@ -117,13 +118,23 @@ for line in iFile:
         # op rt, imm(rs)
         newLine = getInstr(op) + " " + dec2regi(int(rt, 2)) + ", 0x" + str(hex(int(imm, 2)))[2:].zfill(4)  + "(" + dec2regi(int(rs, 2)) + ")"
         oFile.write(newLine)
+    elif (op == "000100" or op == "000101"):                   # translate for beq or bne
+        rt = binary[6:11]
+        rs = binary[11:16]
+        imm = binary[16:32]
+
+        # op rt, rs, imm
+        #newLine = getInstr(op) + " " + dec2regi(int(rt, 2)) + ", " + dec2regi(int(rs, 2)) + ", 0x" + str(hex(int(imm, 2)))[2:].zfill(4)
+        newLine = getInstr(op) + " " + dec2regi(int(rt, 2)) + ", " + dec2regi(int(rs, 2)) + ", " + str(getTwosComp(imm))
+        oFile.write(newLine)
     else:                   # translate for addi
         rs = binary[6:11]
         rt = binary[11:16]
         imm = binary[16:32]
 
         # op rt, rs, imm
-        newLine = getInstr(op) + " " + dec2regi(int(rt, 2)) + ", " + dec2regi(int(rs, 2)) + ", 0x" + str(hex(int(imm, 2)))[2:].zfill(4)
+        #newLine = getInstr(op) + " " + dec2regi(int(rt, 2)) + ", " + dec2regi(int(rs, 2)) + ", 0x" + str(hex(int(imm, 2)))[2:].zfill(4)
+        newLine = getInstr(op) + " " + dec2regi(int(rt, 2)) + ", " + dec2regi(int(rs, 2)) + ", " + str(getTwosComp(imm))
         oFile.write(newLine)
 
     word = ""
