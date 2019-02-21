@@ -112,7 +112,7 @@ def Simulate():
 
         op = binary[0:6]
 
-        if (op == "000000"):        # translate for add, addu, sub
+        if (op == "000000"):        # translate for add, addu, sub, slt
             rs = binary[6:11]
             rt = binary[11:16]
             rd = binary[16:21]
@@ -127,6 +127,11 @@ def Simulate():
                 Register[int(rd,2)] = Register[int(rs,2)] + Register[int(rt,2)]
             if (opCode == "sub"):
                 Register[int(rd,2)] = Register[int(rs,2)] - Register[int(rt,2)]
+            if (opCode == "slt"):
+                if (Register[int(rs,2)] < Register[int(rt,2)]):
+                    Register[int(rd,2)] = 1
+                else:
+                    Register[int(rd,2)] = 0
 
         elif (op == "100011" or op == "101011"):      # translate lw or sw
             rs = binary[6:11]
