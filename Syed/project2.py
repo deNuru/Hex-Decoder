@@ -97,6 +97,8 @@ def Simulate():
     word = ""
     binary = ""
     newLine = ""
+    Register = [ 0 for i in range(24)]
+    Register[0] = 0
     for line in iFile:
         if (line == "\n" or line[0] == "#" ):
             continue
@@ -135,7 +137,6 @@ def Simulate():
             imm = binary[16:32]
 
             # op rt, rs, imm
-            #newLine = getInstr(op) + " " + dec2regi(int(rt, 2)) + ", " + dec2regi(int(rs, 2)) + ", 0x" + str(hex(int(imm, 2)))[2:].zfill(4)
             newLine = getInstr(op) + " " + dec2regi(int(rt, 2)) + ", " + dec2regi(int(rs, 2)) + ", " + str(getTwosComp(imm))
             oFile.write(newLine)
 
@@ -143,17 +144,18 @@ def Simulate():
             rs = binary[6:11]
             rt = binary[11:16]
             imm = binary[16:32]
-
+            opCode = getInstr(op)
             # op rt, rs, imm
-            #newLine = getInstr(op) + " " + dec2regi(int(rt, 2)) + ", " + dec2regi(int(rs, 2)) + ", 0x" + str(hex(int(imm, 2)))[2:].zfill(4)
-            newLine = getInstr(op) + " " + dec2regi(int(rt, 2)) + ", " + dec2regi(int(rs, 2)) + ", " + str(getTwosComp(imm))
+            newLine = opCode + " " + dec2regi(int(rt, 2)) + ", " + dec2regi(int(rs, 2)) + ", " + str(getTwosComp(imm))
             oFile.write(newLine)
+            if ( opCode == "addi"):
+                Register[int(rt,2)] = Register[int(rs,2)] + int(imm,2)
 
         word = ""
         binary = ""
         oFile.write("\n")
   #oFile.close()
-
+    print("Registers contents:", Register)
 def main():
 
     userResponse = input("Would like to begin Simulation? Enter yes or no: ")
