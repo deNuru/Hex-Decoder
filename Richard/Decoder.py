@@ -141,6 +141,8 @@ def Simulate():
                 Register[int(rd,2)] = Register[int(rs,2)] + Register[int(rt,2)]
             elif (opCode == "sub"):
                 Register[int(rd,2)] = Register[int(rs,2)] - Register[int(rt,2)]
+            elif (opCode == "and"):
+                Register[int(rd,2)] = Register[int(rs,2)] & Register[int(rt,2)]
             elif (opCode == "slt"):
                 if (Register[int(rs,2)] < Register[int(rt,2)]):
                     Register[int(rd,2)] = 1
@@ -151,8 +153,27 @@ def Simulate():
                 Register[int(rd,2)] = getTwosComp32(bin(Register[int(rd,2)])[2:])
                 rSyntax = False
             elif (opCode == "srl"): 
+                #print("BEFORE      ", bin(Register[int(rt,2)]))
                 Register[int(rd,2)] = Register[int(rt,2)] >> int(shamt,2)
-                Register[int(rd,2)] = getTwosComp32(bin(Register[int(rd,2)]))
+                #print("AFTER       ", bin(Register[int(rd,2)]))
+                #Register[int(rd,2)] = getTwosComp32(bin(Register[int(rd,2)]))
+                temp = bin(Register[int(rd,2)])
+                if (temp[0] == '-'):
+                    Register[int(rd,2)] = abs(Register[int(rd,2)])
+
+                    #val = bin(Register[int(rd,2)])
+                    print("DEC     ", Register[int(rd,2)])
+                    print("POS     ", bin(Register[int(rd,2)]))
+                    val = Register[int(rd,2)] ^ 268435455
+                    val += 1 
+
+                    print("TWOS    ", bin(val)[2:])
+
+                    temp = '10' + bin(val)[2:]
+                    print("FUN     ", int(temp, 2))
+                    Register[int(rd,2)] = int(temp, 2)
+
+
                 rSyntax = False
 
             if (rSyntax): 
@@ -187,13 +208,17 @@ def Simulate():
             imm = binary[16:32]
             opCode = getInstr(op)
             # op rt, rs, imm
-            newLine = opCode + " " + dec2regi(int(rt, 2)) + ", " + dec2regi(int(rs, 2)) + ", " + str(getTwosComp16(imm))
-            oFile.write(newLine)
-            #updates the registers
+            # newLine = opCode + " " + dec2regi(int(rt, 2)) + ", " + dec2regi(int(rs, 2)) + ", " + str(getTwosComp16(imm))
+            # oFile.write(newLine)
+
+            # updates the registers
             if ( opCode == "addi"):
                 Register[int(rt,2)] = Register[int(rs,2)] + int(imm,2)
+                newLine = opCode + " " + dec2regi(int(rt, 2)) + ", " + dec2regi(int(rs, 2)) + ", " + str(getTwosComp16(imm))
             if(opCode == "ori"):
-                Register[int(rt,2)] = Register[int(rs,2)] | int(imm,2)
+                Register[int(rt,2)] = Register[int(rs,2)] | int(imm,2) 
+                newLine = opCode + " " + dec2regi(int(rt, 2)) + ", " + dec2regi(int(rs, 2)) + ", " + str(int(imm,2))
+            oFile.write(newLine)
 
         word = ""
         binary = ""
