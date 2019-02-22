@@ -1,5 +1,4 @@
 
-
 # function for converting hex to binary
 def hex2bin(argument):
     switcher = {
@@ -111,8 +110,10 @@ def Simulate():
     for line in iFile:
         if (line == "\n" or line[0] == "#" ):
             continue
-        if (str(line) == "0x1000ffff"):
-            print("ThankYou")
+        if (str(line) == "0x1000ffff"):   
+            #prints the register contents
+            print("Registers contents:", Register)
+            print("\nThankYou")
             exit()
         word = word + line[2:10]        # get each line, but ignore 0x
 
@@ -149,13 +150,17 @@ def Simulate():
                 Register[int(rd,2)] = Register[int(rt,2)] << int(shamt,2)
                 Register[int(rd,2)] = getTwosComp32(bin(Register[int(rd,2)])[2:])
                 rSyntax = False
+            elif (opCode == "srl"): 
+                Register[int(rd,2)] = Register[int(rt,2)] >> int(shamt,2)
+                Register[int(rd,2)] = getTwosComp32(bin(Register[int(rd,2)]))
+                rSyntax = False
 
             if (rSyntax): 
                 # funct rd, rs, rt              ArithLog
                 newLine = opCode + " " + dec2regi(int(rd, 2)) + ", " + dec2regi(int(rs, 2)) + ", " + dec2regi(int(rt, 2))
             else:
                 # funct rd, rt, shamt           Shift
-                newLine = opCode + " " + dec2regi(int(rd, 2)) + ", " + dec2regi(int(rt, 2)) + ", " + dec2regi(int(shamt, 2))
+                newLine = opCode + " " + dec2regi(int(rd, 2)) + ", " + dec2regi(int(rt, 2)) + ", " + str(int(shamt, 2))
             
             oFile.write(newLine)
         elif (op == "100011" or op == "101011"):      # translate lw or sw
@@ -194,8 +199,7 @@ def Simulate():
         binary = ""
         oFile.write("\n")
     oFile.close()
-    #prints the register contents
-    print("Registers contents:", Register)
+
 def main():
 
     #userResponse = input("Would you like to begin Simulation? Enter yes or no: ")
