@@ -138,14 +138,14 @@ def Simulate():
             #updates the registers
             if (opCode == "addu"):
                 Register[int(rd,2)] = Register[int(rs,2)] + Register[int(rt,2)]
-            if (opCode == "sub"):
+            elif (opCode == "sub"):
                 Register[int(rd,2)] = Register[int(rs,2)] - Register[int(rt,2)]
-            if (opCode == "slt"):
+            elif (opCode == "slt"):
                 if (Register[int(rs,2)] < Register[int(rt,2)]):
                     Register[int(rd,2)] = 1
                 else:
                     Register[int(rd,2)] = 0
-            if (opCode == "sll"): #this doesnot work right for some reason, need a fix
+            elif (opCode == "sll"): 
                 Register[int(rd,2)] = Register[int(rt,2)] << int(shamt,2)
                 Register[int(rd,2)] = getTwosComp32(bin(Register[int(rd,2)])[2:])
                 rSyntax = False
@@ -198,10 +198,10 @@ def Simulate():
     print("Registers contents:", Register)
 def main():
 
-    userResponse = input("Would you like to begin Simulation? Enter yes or no: ")
-    if (userResponse == "yes" or userResponse == "Yes"):
-        Simulate()
-    else:
-        print("GoodBye")
+    #userResponse = input("Would you like to begin Simulation? Enter yes or no: ")
+    #if (userResponse == "yes" or userResponse == "Yes"):
+    Simulate()
+    #else:
+        #print("GoodBye")
 if __name__== "__main__":
   main()
