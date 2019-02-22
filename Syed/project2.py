@@ -84,7 +84,9 @@ def getTwosComp(argument):
 
 def getTwosComp32(argument):
     if (argument[0] == '1'):
-        val = 2147483647 - int(argument, 2) + 1
+        a = int(argument,2)
+        print(a)
+        val = 4294967296 - int(argument, 2) + 1
         val = -val
     else:
         val = int(argument, 2)
@@ -142,13 +144,8 @@ def Simulate():
                     Register[int(rd,2)] = 0
             if (opCode == "sll"): #this doesnot work right for some reason, need a fix
                 (Register[int(rd,2)]) = Register[int(rt,2)] << int(shamt,2)
-                if (Register[int(rd,2)] >  2147483647 ):
-                    #a = Register[int(rd,2)]
-                    #Register[int(rd,2)] = str(getTwosComp(Register[int(rd,2)]))
-                    a =  bin(Register[int(rd,2)])[2:]
-                    print(a)
-                    #b = str(a)
-                    print (getTwosComp32('10101011110111010000000000000000'))
+                a =  bin(Register[int(rd,2)])[2:]
+                Register[int(rd,2)] = getTwosComp32(a)
 
         elif (op == "100011" or op == "101011"):      # translate lw or sw
             rs = binary[6:11]
