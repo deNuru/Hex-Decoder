@@ -137,11 +137,13 @@ def Simulate():
             rs = binary[6:11]
             rt = binary[11:16]
             imm = binary[16:32]
-
-            # op rt, imm(rs)
-            #newLine = getInstr(op) + " " + dec2regi(int(rt, 2)) + ", 0x" + str(hex(int(imm, 2)))[2:].zfill(4)  + "(" + dec2regi(int(rs, 2)) + ")"
-            newLine = getInstr(op) + " " + dec2regi(int(rt, 2)) + "," + str(getTwosComp(imm))  + "(" + dec2regi(int(rs, 2)) + ")"
-            oFile.write(newLine)
+            if binary[16:32] == '0000000000000000':
+                newLine = getInstr(op) + " " + dec2regi(int(rt, 2)) + ", " + ""  + "(" + dec2regi(int(rs, 2)) + ")"
+                oFile.write(newLine)
+            else:
+                newLine = getInstr(op) + " " + dec2regi(int(rt, 2)) + ", " + str(getTwosComp(imm))  + "(" + dec2regi(int(rs, 2)) + ")"
+                oFile.write(newLine)
+            
         elif (op == "000100" or op == "000101"):                   # translate for beq or bne
             rt = binary[6:11]
             rs = binary[11:16]
