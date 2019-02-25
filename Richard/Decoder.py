@@ -199,7 +199,7 @@ def Simulate():
                 newLine = opCode + " " + dec2regi(int(rd, 2)) + ", " + dec2regi(int(rt, 2)) + ", " + str(int(shamt, 2))
             
             oFile.write(newLine)
-        elif (op == "100011" or op == "101011"):      # translate lw or sw
+        elif (op == "100011" or op == "101011"):                   # translate lw or sw
             rs = binary[6:11]
             rt = binary[11:16]
             imm = binary[16:32]
