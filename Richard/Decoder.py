@@ -157,12 +157,10 @@ def Simulate():
                 else:
                     Register[int(rd,2)] = 0
             elif (opCode == "sll"):
-                print("hello")
                 Register[int(rd,2)] = Register[int(rt,2)] << int(shamt,2)
                 Register[int(rd,2)] = getTwosComp32(bin(Register[int(rd,2)])[2:])
                 rSyntax = False
             elif (opCode == "srl"):
-                print("true")
                 Register[int(rd,2)] = Register[int(rt,2)] >> int(shamt,2)
 
                 temp = bin(Register[int(rd,2)])
