@@ -88,6 +88,12 @@ def getTwosComp32(argument):
     else:
         val = int(argument, 2)
     return int(val)
+def getBitSize(argument):
+    sum = 0
+    while argument >> sum:
+        sum += 1
+
+    return sum
 
 def Simulate(I):
     print("Welcome to the Simulation!")
@@ -179,12 +185,20 @@ def Simulate(I):
                     #val = bin(Register[int(rd,2)])
                     #print("DEC     ", Register[int(rd,2)])
                     #print("POS     ", bin(Register[int(rd,2)]))
+                    ogBitSize = getBitSize(Register[int(rd,2)])
                     val = Register[int(rd,2)] ^ 268435455
                     val += 1
 
+                    if(ogBitSize > getBitSize(val)):
+                        zeroes - ogBitSize - getBitSize(val)
+                        temp = bin(val)[2:]
+                        while zeroes!=0:
+                            temp = '0' + temp
+                            zeroes -= 1
+                        temp = '1' + temp
                     #print("TWOS    ", bin(val)[2:])
 
-                    temp = '10' + bin(val)[2:]
+                    #temp = '10' + bin(val)[2:]
                     #print("FUN     ", int(temp, 2))
                     Register[int(rd,2)] = int(temp, 2)
                     print("Current", Register[int(rd,2)])
