@@ -118,7 +118,7 @@ def Simulate():
     for line in iFile:
         if (line == "\n" or line[0] == "#" ):
             continue
-        if (str(line) == "0x1000ffff"):   
+        if (str(line) == "0x1000ffff"):
             #prints the register contents
             print("Registers contents:", Register)
             print("\nThankYou")
@@ -129,7 +129,7 @@ def Simulate():
             binary = binary + hex2bin(i)    # convert to binary
 
         op = binary[0:6]
-        
+
         rSyntax = True         # checker if syntax is ArithLog (True) or Shift (False)
 
         if (op == "000000"):        # translate for add, addu, sub, slt, sll
@@ -156,12 +156,13 @@ def Simulate():
                     Register[int(rd,2)] = 1
                 else:
                     Register[int(rd,2)] = 0
-            elif (opCode == "sll"): 
+            elif (opCode == "sll"):
+                print("hello")
                 Register[int(rd,2)] = Register[int(rt,2)] << int(shamt,2)
                 Register[int(rd,2)] = getTwosComp32(bin(Register[int(rd,2)])[2:])
                 rSyntax = False
-            elif (opCode == "srl"): 
-                
+            elif (opCode == "srl"):
+                print("true")
                 Register[int(rd,2)] = Register[int(rt,2)] >> int(shamt,2)
 
                 temp = bin(Register[int(rd,2)])
@@ -191,13 +192,13 @@ def Simulate():
 
                 rSyntax = False
 
-            if (rSyntax): 
+            if (rSyntax):
                 # funct rd, rs, rt              ArithLog
                 newLine = opCode + " " + dec2regi(int(rd, 2)) + ", " + dec2regi(int(rs, 2)) + ", " + dec2regi(int(rt, 2))
             else:
                 # funct rd, rt, shamt           Shift
                 newLine = opCode + " " + dec2regi(int(rd, 2)) + ", " + dec2regi(int(rt, 2)) + ", " + str(int(shamt, 2))
-            
+
             oFile.write(newLine)
         elif (op == "100011" or op == "101011"):                   # translate lw or sw
             rs = binary[6:11]
