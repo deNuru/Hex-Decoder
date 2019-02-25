@@ -90,6 +90,14 @@ def getTwosComp32(argument):
         val = int(argument, 2)
     return int(val)
 
+## Return bit-size of non-negative number
+def getBitSize(argument):
+    sum = 0
+    while argument >> sum: 
+        sum += 1
+
+    return sum
+
 def Simulate():
     print("Welcome to the Simulation!")
     iFile = open("hex.txt", "r")
@@ -153,26 +161,33 @@ def Simulate():
                 Register[int(rd,2)] = getTwosComp32(bin(Register[int(rd,2)])[2:])
                 rSyntax = False
             elif (opCode == "srl"): 
-                #print("BEFORE      ", bin(Register[int(rt,2)]))
+                
                 Register[int(rd,2)] = Register[int(rt,2)] >> int(shamt,2)
-                #print("AFTER       ", bin(Register[int(rd,2)]))
-                #Register[int(rd,2)] = getTwosComp32(bin(Register[int(rd,2)]))
+
                 temp = bin(Register[int(rd,2)])
                 if (temp[0] == '-'):
                     Register[int(rd,2)] = abs(Register[int(rd,2)])
 
-                    #val = bin(Register[int(rd,2)])
-                    print("DEC     ", Register[int(rd,2)])
-                    print("POS     ", bin(Register[int(rd,2)]))
-                    val = Register[int(rd,2)] ^ 268435455
+                    ogBitSize = getBitSize(Register[int(rd,2)])
+
+                    val = Register[int(rd,2)] ^ 268435455           # get two's complement
                     val += 1 
 
-                    print("TWOS    ", bin(val)[2:])
+                    if (ogBitSize > getBitSize(val)):               # check if the two's complement removed leading zeroes
+                        zeroes = ogBitSize - getBitSize(val)        # get the number of missing zeroes
 
-                    temp = '10' + bin(val)[2:]
-                    print("FUN     ", int(temp, 2))
+                        temp = bin(val)[2:]
+
+                        while zeroes != 0:                          # concatanate the missing zeroes
+                            temp = '0' + temp
+                            zeroes -= 1
+                        temp = '1' + temp
+
+                        # temp = '10' + bin(val)[2:]
+                    #else:
+                    #    temp = '1' + bin(val)[2:]
+
                     Register[int(rd,2)] = int(temp, 2)
-
 
                 rSyntax = False
 
@@ -193,6 +208,7 @@ def Simulate():
             #newLine = getInstr(op) + " " + dec2regi(int(rt, 2)) + ", 0x" + str(hex(int(imm, 2)))[2:].zfill(4)  + "(" + dec2regi(int(rs, 2)) + ")"
             newLine = getInstr(op) + " " + dec2regi(int(rt, 2)) + "," + str(getTwosComp16(imm))  + "(" + dec2regi(int(rs, 2)) + ")"
             oFile.write(newLine)
+            
         elif (op == "000100" or op == "000101"):                   # translate for beq or bne
             rt = binary[6:11]
             rs = binary[11:16]
