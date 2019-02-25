@@ -1,5 +1,4 @@
 
-
 # function for converting hex to binary
 def hex2bin(argument):
     switcher = {
@@ -73,8 +72,8 @@ def dec2regi(argument):
     }
     return switcher.get(str(argument), "nothing")
 
-## Two's complement
-def getTwosComp(argument):
+## Two's complement for 16 bits
+def getTwosComp16(argument):
     if (argument[0] == '1'):
         val = 65535 - int(argument, 2) + 1
         val = -val
@@ -82,6 +81,22 @@ def getTwosComp(argument):
         val = int(argument, 2)
     return int(val)
 
+## Two's complement for 32 bits
+def getTwosComp32(argument):
+    if (argument[0] == '1'):
+        val = 4294967295 - int(argument, 2) + 1
+        val = -val
+    else:
+        val = int(argument, 2)
+    return int(val)
+
+## Return bit-size of non-negative number
+def getBitSize(argument):
+    sum = 0
+    while argument >> sum: 
+        sum += 1
+
+    return sum
 
 def Simulate():
     print("Welcome to the Simulation!")
@@ -99,11 +114,14 @@ def Simulate():
     newLine = ""
     Register = [ 0 for i in range(24)]
     Register[0] = 0
+
     for line in iFile:
         if (line == "\n" or line[0] == "#" ):
             continue
-        if (str(line) == "0x1000ffff"):
-            print("ThankYou")
+        if (str(line) == "0x1000ffff"):   
+            #prints the register contents
+            print("Registers contents:", Register)
+            print("\nThankYou")
             exit()
         word = word + line[2:10]        # get each line, but ignore 0x
 
@@ -111,6 +129,8 @@ def Simulate():
             binary = binary + hex2bin(i)    # convert to binary
 
         op = binary[0:6]
+        
+        rSyntax = True         # checker if syntax is ArithLog (True) or Shift (False)
 
         if (op == "000000"):        # translate for add, addu, sub, slt, sll
             rs = binary[6:11]
@@ -119,22 +139,66 @@ def Simulate():
             shamt = binary[21:26]
             funct = binary[26:32]
             opCode = getInstr(funct)
+
             # funct rd, rs, rt
-            newLine = opCode + " " + dec2regi(int(rd, 2)) + ", " + dec2regi(int(rs, 2)) + ", " + dec2regi(int(rt, 2))
-            oFile.write(newLine)
+            # newLine = opCode + " " + dec2regi(int(rd, 2)) + ", " + dec2regi(int(rs, 2)) + ", " + dec2regi(int(rt, 2))
+            # oFile.write(newLine)
+
             #updates the registers
             if (opCode == "addu"):
                 Register[int(rd,2)] = Register[int(rs,2)] + Register[int(rt,2)]
-            if (opCode == "sub"):
+            elif (opCode == "sub"):
                 Register[int(rd,2)] = Register[int(rs,2)] - Register[int(rt,2)]
-            if (opCode == "slt"):
+            elif (opCode == "and"):
+                Register[int(rd,2)] = Register[int(rs,2)] & Register[int(rt,2)]
+            elif (opCode == "slt"):
                 if (Register[int(rs,2)] < Register[int(rt,2)]):
                     Register[int(rd,2)] = 1
                 else:
                     Register[int(rd,2)] = 0
-            if (opCode == "sll"): #this doesnot work right for some reason, need a fix
+            elif (opCode == "sll"): 
                 Register[int(rd,2)] = Register[int(rt,2)] << int(shamt,2)
+                Register[int(rd,2)] = getTwosComp32(bin(Register[int(rd,2)])[2:])
+                rSyntax = False
+            elif (opCode == "srl"): 
+                
+                Register[int(rd,2)] = Register[int(rt,2)] >> int(shamt,2)
 
+                temp = bin(Register[int(rd,2)])
+                if (temp[0] == '-'):
+                    Register[int(rd,2)] = abs(Register[int(rd,2)])
+
+                    ogBitSize = getBitSize(Register[int(rd,2)])
+
+                    val = Register[int(rd,2)] ^ 268435455           # get two's complement
+                    val += 1 
+
+                    if (ogBitSize > getBitSize(val)):               # check if the two's complement removed leading zeroes
+                        zeroes = ogBitSize - getBitSize(val)        # get the number of missing zeroes
+
+                        temp = bin(val)[2:]
+
+                        while zeroes != 0:                          # concatanate the missing zeroes
+                            temp = '0' + temp
+                            zeroes -= 1
+                        temp = '1' + temp
+
+                        # temp = '10' + bin(val)[2:]
+                    #else:
+                    #    temp = '1' + bin(val)[2:]
+
+                    Register[int(rd,2)] = int(temp, 2)
+
+                rSyntax = False
+
+            if (rSyntax): 
+                # funct rd, rs, rt              ArithLog
+                newLine = opCode + " " + dec2regi(int(rd, 2)) + ", " + dec2regi(int(rs, 2)) + ", " + dec2regi(int(rt, 2))
+            else:
+                # funct rd, rt, shamt           Shift
+                newLine = opCode + " " + dec2regi(int(rd, 2)) + ", " + dec2regi(int(rt, 2)) + ", " + str(int(shamt, 2))
+            
+            oFile.write(newLine)
         elif (op == "100011" or op == "101011"):      # translate lw or sw
             rs = binary[6:11]
             rt = binary[11:16]
@@ -142,15 +206,16 @@ def Simulate():
 
             # op rt, imm(rs)
             #newLine = getInstr(op) + " " + dec2regi(int(rt, 2)) + ", 0x" + str(hex(int(imm, 2)))[2:].zfill(4)  + "(" + dec2regi(int(rs, 2)) + ")"
-            newLine = getInstr(op) + " " + dec2regi(int(rt, 2)) + "," + str(getTwosComp(imm))  + "(" + dec2regi(int(rs, 2)) + ")"
+            newLine = getInstr(op) + " " + dec2regi(int(rt, 2)) + "," + str(getTwosComp16(imm))  + "(" + dec2regi(int(rs, 2)) + ")"
             oFile.write(newLine)
+            
         elif (op == "000100" or op == "000101"):                   # translate for beq or bne
             rt = binary[6:11]
             rs = binary[11:16]
             imm = binary[16:32]
 
             # op rt, rs, imm
-            newLine = getInstr(op) + " " + dec2regi(int(rt, 2)) + ", " + dec2regi(int(rs, 2)) + ", " + str(getTwosComp(imm))
+            newLine = getInstr(op) + " " + dec2regi(int(rt, 2)) + ", " + dec2regi(int(rs, 2)) + ", " + str(getTwosComp16(imm))
             oFile.write(newLine)
 
         else:                   # translate for addi, ori
@@ -159,26 +224,29 @@ def Simulate():
             imm = binary[16:32]
             opCode = getInstr(op)
             # op rt, rs, imm
-            newLine = opCode + " " + dec2regi(int(rt, 2)) + ", " + dec2regi(int(rs, 2)) + ", " + str(getTwosComp(imm))
-            oFile.write(newLine)
-            #updates the registers
+            # newLine = opCode + " " + dec2regi(int(rt, 2)) + ", " + dec2regi(int(rs, 2)) + ", " + str(getTwosComp16(imm))
+            # oFile.write(newLine)
+
+            # updates the registers
             if ( opCode == "addi"):
                 Register[int(rt,2)] = Register[int(rs,2)] + int(imm,2)
+                newLine = opCode + " " + dec2regi(int(rt, 2)) + ", " + dec2regi(int(rs, 2)) + ", " + str(getTwosComp16(imm))
             if(opCode == "ori"):
-                Register[int(rt,2)] = Register[int(rs,2)] | int(imm,2)
+                Register[int(rt,2)] = Register[int(rs,2)] | int(imm,2) 
+                newLine = opCode + " " + dec2regi(int(rt, 2)) + ", " + dec2regi(int(rs, 2)) + ", " + str(int(imm,2))
+            oFile.write(newLine)
 
         word = ""
         binary = ""
         oFile.write("\n")
     oFile.close()
-    #prints the register contents
-    print("Registers contents:", Register)
+
 def main():
 
-    userResponse = input("Would you like to begin Simulation? Enter yes or no: ")
-    if (userResponse == "yes" or userResponse == "Yes"):
-        Simulate()
-    else:
-        print("GoodBye")
+    #userResponse = input("Would you like to begin Simulation? Enter yes or no: ")
+    #if (userResponse == "yes" or userResponse == "Yes"):
+    Simulate()
+    #else:
+        #print("GoodBye")
 if __name__== "__main__":
   main()
