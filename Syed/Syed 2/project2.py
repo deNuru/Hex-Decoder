@@ -162,7 +162,7 @@ def Simulate(I):
                 Register[int(rd,2)] = Register[int(rs,2)] - Register[int(rt,2)]
             elif (opCode == "and"):
                 Register[int(rd,2)] = Register[int(rs,2)] & Register[int(rt,2)]
-                print("Register 12 = ", Register[12])
+                print("Register 12 = ", (Register[12]))
             elif (opCode == "slt"):
                 if (Register[int(rs,2)] < Register[int(rt,2)]):
                     Register[int(rd,2)] = 1
@@ -170,7 +170,7 @@ def Simulate(I):
                     Register[int(rd,2)] = 0
             elif (opCode == "sll"):
                 Register[int(rd,2)] = Register[int(rt,2)] << int(shamt,2)
-                Register[int(rd,2)] = getTwosComp32(bin(Register[int(rd,2)])[2:])
+                #Register[int(rd,2)] = getTwosComp32(bin(Register[int(rd,2)])[2:])
                 rSyntax = False
             elif (opCode == "srl"):
                 #print("BEFORE      ", bin(Register[int(rt,2)]))
@@ -201,7 +201,7 @@ def Simulate(I):
                     #temp = '10' + bin(val)[2:]
                     #print("FUN     ", int(temp, 2))
                     Register[int(rd,2)] = int(temp, 2)
-                    print("Current", Register[int(rd,2)])
+                    print("Current", (Register[int(rd,2)]))
 
                 rSyntax = False
 
