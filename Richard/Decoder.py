@@ -108,6 +108,12 @@ def insertList(pc, newline):
     if (check == False):
         printList.append((pc, newline))    
 
+## Returns the proper memory index of the memory address
+def memoryIndex(val,offset1):
+    val = val + (offset1)
+    index = (val - 8192)/4
+    return int (index)
+
 Register = [0 for i in range(24)]
 printList = []
 
@@ -124,6 +130,7 @@ def Simulate(I):
     funct = ""
     newLine = ""
 
+    Memory = [0 for i in range(1000)]
     PC = 0
 
     finished = False
@@ -212,12 +219,30 @@ def Simulate(I):
             imm = binary[16:32]
 
             # op rt, imm(rs)
-            newLine = getInstr(op) + " " + dec2regi(int(rt, 2)) + "," + str(getTwosComp16(imm))  + "(" + dec2regi(int(rs, 2)) + ")"
-            pr = "PC"+ ": " + str(PC) + " "+  getInstr(op) + " " + dec2regi(int(rt, 2)) + "," + str(getTwosComp16(imm))  + "(" + dec2regi(int(rs, 2)) + ")"
-            print(pr)
-            PC = PC + 4
-            print("Registers contents:", Register)
-            insertList(PC, newLine)
+            #newLine = getInstr(op) + " " + dec2regi(int(rt, 2)) + ", 0x" + str(hex(int(imm, 2)))[2:].zfill(4)  + "(" + dec2regi(int(rs, 2)) + ")"
+            if (op == "101011"):
+
+                newLine = getInstr(op) + " " + dec2regi(int(rt, 2)) + "," + str(getTwosComp16(imm))  + "(" + dec2regi(int(rs, 2)) + ")"
+                pr = "PC"+ ": " + str(PC) + " "+  getInstr(op) + " " + dec2regi(int(rt, 2)) + "," + str(getTwosComp16(imm))  + "(" + dec2regi(int(rs, 2)) + ")"
+                print(pr)
+                num = Register[int(rs,2)]
+                im = getTwosComp16(imm)
+                Memory[memoryIndex(num,im)] = Register[int(rt,2)]
+                PC = PC + 4
+                print("Registers contents:", Register)
+                print("Memory contents: ", Memory)
+            else:
+                newLine = getInstr(op) + " " + dec2regi(int(rt, 2)) + "," + str(getTwosComp16(imm))  + "(" + dec2regi(int(rs, 2)) + ")"
+                pr = "PC"+ ": " + str(PC) + " "+  getInstr(op) + " " + dec2regi(int(rt, 2)) + "," + str(getTwosComp16(imm))  + "(" + dec2regi(int(rs, 2)) + ")"
+                print(pr)
+                num = Register[int(rs,2)]
+                im = getTwosComp16(imm)
+                Register[int(rt,2)] = Memory[memoryIndex(num,im)]
+                PC = PC + 4
+                print("Registers contents:", Register)
+                print("Memory contents: ", Memory)
+
+            insertList(PC - 4, newLine)
             
         elif (op == "000100" or op == "000101"):                   # translate for beq or bne
             rt = binary[6:11]
