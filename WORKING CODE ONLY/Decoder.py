@@ -132,8 +132,6 @@ def Simulate(I):
         binary = I[PC]
         if (binary == "00010000000000001111111111111111"):   # END instruction
             finished = True
-            print("***Simulation finished***")
-            exit()
 
         op = binary[0:6]
         rSyntax = True         # checker if syntax is ArithLog (True) or Shift (False)
@@ -228,6 +226,9 @@ def Simulate(I):
             newLine = getInstr(op) + " " + dec2regi(int(rt, 2)) + ", " + dec2regi(int(rs, 2)) + ", " + str(getTwosComp16(imm))
             pr = "PC"+ ": " + str(PC) + " "+  getInstr(op) + " " + dec2regi(int(rt, 2)) + ", " + dec2regi(int(rs, 2)) + ", " + str(getTwosComp16(imm))
             print(pr)
+
+            insertList(PC, newLine)
+            
             # op rt, rs, imm
             if (op == "000100"):
                 offset = getTwosComp16(imm)
@@ -245,8 +246,6 @@ def Simulate(I):
                 elif(Register[int(rs,2)] == Register[int(rt,2)]):
                     PC = PC + 4
                     print("Registers contents:", Register)
-            
-            insertList(PC, newLine)
 
         else:                   # translate for addi, ori
             rs = binary[6:11]
@@ -273,8 +272,9 @@ def Simulate(I):
             insertList(PC, newLine)
     
     # Write all instructions to an output file
+    printList.sort()
     for a, b in printList:
-        oFile.write(b)
+        oFile.write(str(a) + " " + b)
         oFile.write("\n")
 
     oFile.close()
@@ -307,6 +307,7 @@ def main():
         word = ""
         binary =""
     Simulate(I)
+    print("***Simulation finished***")
 
 if __name__== "__main__":
   main()
