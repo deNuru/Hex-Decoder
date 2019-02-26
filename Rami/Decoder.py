@@ -212,11 +212,11 @@ def Simulate(I):
             imm = binary[16:32]
             if binary[16:32] == '0000000000000000':
                 newLine = getInstr(op) + " " + dec2regi(int(rt, 2)) + ", "  + "(" + dec2regi(int(rs, 2)) + ")"
-                insertList(PC, newLine)
                 pr = "PC"+ ": " + str(PC) + " "+  getInstr(op) + " " + dec2regi(int(rt, 2)) + ", "  + "(" + dec2regi(int(rs, 2)) + ")"
                 print(pr)
                 PC = PC + 4
                 print("Registers contents:", Register)
+                insertList(PC, newLine)
             else:
                 newLine = getInstr(op) + " " + dec2regi(int(rt, 2)) + ", " + str(getTwosComp16(imm))  + "(" + dec2regi(int(rs, 2)) + ")"
                 pr = "PC"+ ": " + str(PC) + " "+  getInstr(op) + " " + dec2regi(int(rt, 2)) + ", " + str(getTwosComp16(imm))  + "(" + dec2regi(int(rs, 2)) + ")"
@@ -231,8 +231,8 @@ def Simulate(I):
             imm = binary[16:32]
             newLine = getInstr(op) + " " + dec2regi(int(rt, 2)) + ", " + dec2regi(int(rs, 2)) + ", " + str(getTwosComp16(imm))
             pr = "PC"+ ": " + str(PC) + " "+  getInstr(op) + " " + dec2regi(int(rt, 2)) + ", " + dec2regi(int(rs, 2)) + ", " + str(getTwosComp16(imm))
+            PC = PC + 4
             print(pr)
-
             insertList(PC, newLine)
             
             # op rt, rs, imm
