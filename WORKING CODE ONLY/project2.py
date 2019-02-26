@@ -95,6 +95,11 @@ def getBitSize(argument):
 
     return sum
 
+def memoryIndex(val,offset1):
+    val = val + (offset1)
+    index = (val - 8192)/4
+    return int (index)
+
 def Simulate(I):
     print("Welcome to the Simulation!")
     iFile = open("hex.txt", "r")
@@ -110,6 +115,7 @@ def Simulate(I):
     #binary = ""
     newLine = ""
     Register = [ 0 for i in range(24)]
+    Memory = [0 for i in range(1000)]
 
     #I = []
     PC = 0
@@ -190,7 +196,7 @@ def Simulate(I):
                     val += 1
 
                     if(ogBitSize > getBitSize(val)):
-                        zeroes - ogBitSize - getBitSize(val)
+                        zeroes = ogBitSize - getBitSize(val)
                         temp = bin(val)[2:]
                         while zeroes!=0:
                             temp = '0' + temp
@@ -228,11 +234,29 @@ def Simulate(I):
 
             # op rt, imm(rs)
             #newLine = getInstr(op) + " " + dec2regi(int(rt, 2)) + ", 0x" + str(hex(int(imm, 2)))[2:].zfill(4)  + "(" + dec2regi(int(rs, 2)) + ")"
-            newLine = getInstr(op) + " " + dec2regi(int(rt, 2)) + "," + str(getTwosComp16(imm))  + "(" + dec2regi(int(rs, 2)) + ")"
-            pr = "PC"+ ": " + str(PC) + " "+  getInstr(op) + " " + dec2regi(int(rt, 2)) + "," + str(getTwosComp16(imm))  + "(" + dec2regi(int(rs, 2)) + ")"
-            print(pr)
-            PC = PC + 4
-            print("Registers contents:", Register)
+            if (op == "101011"):
+
+                newLine = getInstr(op) + " " + dec2regi(int(rt, 2)) + "," + str(getTwosComp16(imm))  + "(" + dec2regi(int(rs, 2)) + ")"
+                pr = "PC"+ ": " + str(PC) + " "+  getInstr(op) + " " + dec2regi(int(rt, 2)) + "," + str(getTwosComp16(imm))  + "(" + dec2regi(int(rs, 2)) + ")"
+                print(pr)
+                num = Register[int(rs,2)]
+                im = getTwosComp16(imm)
+                Memory[memoryIndex(num,im)] = Register[int(rt,2)]
+                PC = PC + 4
+                print("Registers contents:", Register)
+                print("Memory contents: ", Memory)
+            else:
+                newLine = getInstr(op) + " " + dec2regi(int(rt, 2)) + "," + str(getTwosComp16(imm))  + "(" + dec2regi(int(rs, 2)) + ")"
+                pr = "PC"+ ": " + str(PC) + " "+  getInstr(op) + " " + dec2regi(int(rt, 2)) + "," + str(getTwosComp16(imm))  + "(" + dec2regi(int(rs, 2)) + ")"
+                print(pr)
+                num = Register[int(rs,2)]
+                im = getTwosComp16(imm)
+                Register[int(rt,2)] = Memory[memoryIndex(num,im)]
+                PC = PC + 4
+                print("Registers contents:", Register)
+                print("Memory contents: ", Memory)
+
+
             #oFile.write(newLine)
         elif (op == "000100" or op == "000101"):                   # translate for beq or bne
             rt = binary[6:11]
@@ -315,7 +339,7 @@ def main():
         for i in word:
             binary = binary + hex2bin(i)    # convert to binary
         I.append(binary)
-        print(I)
+        #print(I)
         I.append(0)
         I.append(0)
         I.append(0)
