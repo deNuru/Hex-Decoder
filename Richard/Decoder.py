@@ -108,7 +108,7 @@ def insertList(pc, newline):
     if (check == False):
         printList.append((pc, newline))    
 
-Register = [ 0 for i in range(24)]
+Register = [0 for i in range(24)]
 printList = []
 
 def Simulate(I):
@@ -133,6 +133,7 @@ def Simulate(I):
         if (binary == "00010000000000001111111111111111"):   # END instruction
             finished = True
             print("***Simulation finished***")
+            exit()
 
         op = binary[0:6]
         rSyntax = True         # checker if syntax is ArithLog (True) or Shift (False)
@@ -173,14 +174,14 @@ def Simulate(I):
                 if (temp[0] == '-'):
                     Register[int(rd,2)] = abs(Register[int(rd,2)])
 
-                    ogBitSize = getBitSize(Register[int(rd,2)])
-                    val = Register[int(rd,2)] ^ 268435455
-                    val += 1
+                    ogBitSize = getBitSize(Register[int(rd,2)])         
+                    val = Register[int(rd,2)] ^ 268435455                   # get the 
+                    val += 1                                                # two's complement
 
-                    if(ogBitSize > getBitSize(val)):
-                        zeroes = ogBitSize - getBitSize(val)
+                    if(ogBitSize > getBitSize(val)):                        # check if there are missing zeroes
+                        zeroes = ogBitSize - getBitSize(val)                
                         temp = bin(val)[2:]
-                        while zeroes!=0:
+                        while zeroes!=0:                                    # concatanate the missing zeroes
                             temp = '0' + temp
                             zeroes -= 1
                         temp = '1' + temp
@@ -285,8 +286,7 @@ def main():
     I  = []
     binary = ""
     word = ""
-    #userResponse = input("Would you like to begin Simulation? Enter yes or no: ")
-    #if (userResponse == "yes" or userResponse == "Yes"):
+    
     for line in iFile:
         if (line == "\n" or line[0] == "#" ):
             continue
@@ -307,7 +307,6 @@ def main():
         word = ""
         binary =""
     Simulate(I)
-    #else:
-        #print("GoodBye")
+
 if __name__== "__main__":
   main()
