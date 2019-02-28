@@ -1,4 +1,3 @@
-
 # function for converting hex to binary
 def hex2bin(argument):
     switcher = {
@@ -39,6 +38,7 @@ def getInstr(argument):
         "100011": "lw",
         "100010": "sub",
         "001101": "ori",
+        "001111": "lui",
     }
     return switcher.get(argument, "nothing")
 
@@ -84,24 +84,44 @@ def getTwosComp16(argument):
 ## Two's complement for 32 bits
 def getTwosComp32(argument):
     if (argument[0] == '1'):
-        val = 4294967295 - int(argument, 2) + 1
-        val = -val
+        num = int(argument,2)
+        val = -2147483648 + (num - 2147483648)
     else:
         val = int(argument, 2)
     return int(val)
 
-## Return bit-size of non-negative number
+## Returns bit size of a non-negative number
 def getBitSize(argument):
     sum = 0
-    while argument >> sum: 
+    while argument >> sum:
         sum += 1
 
     return sum
 
-def Simulate():
+## Inserts new instruction so long as there is no duplicates on the same PC
+def insertList(pc, newline):
+    check = False
+
+    for a, b in printList:
+        if (a == pc and b == newline):
+            check = True
+
+    if (check == False):
+        printList.append((pc, newline))
+
+## Returns the proper memory index of the memory address
+def memoryIndex(val,offset1):
+    val = val + (offset1)
+    index = (val - 8192)/4
+    return int (index)
+
+Register = [0 for i in range(24)]
+printList = []
+
+def Simulate(I):
+    oFile = open("output.txt.", "w")
     print("Welcome to the Simulation!")
     iFile = open("hex.txt", "r")
-    oFile = open("output.txt.", "w")
     op =  ""
     rs = ""
     rt = ""
@@ -109,30 +129,25 @@ def Simulate():
     shamt = ""
     imm = ""
     funct = ""
-    word = ""
-    binary = ""
     newLine = ""
-    Register = [ 0 for i in range(24)]
-    Register[0] = 0
 
-    for line in iFile:
-        if (line == "\n" or line[0] == "#" ):
-            continue
-        if (str(line) == "0x1000ffff"):   
-            #prints the register contents
-            print("Registers contents:", Register)
-            print("\nThankYou")
-            exit()
-        word = word + line[2:10]        # get each line, but ignore 0x
+    Memory = [0 for i in range(508)]
+    PC = 0
 
-        for i in word:
-            binary = binary + hex2bin(i)    # convert to binary
+    finished = False
+    while(not(finished)):
+        Register[0] = 0
+        binary = I[PC]
+        if (binary == "00010000000000001111111111111111"):   # END instruction
+            finished = True
+            print("Register Contents: ", Register)
+            print("Memory Array: ", Memory)
 
         op = binary[0:6]
-        
         rSyntax = True         # checker if syntax is ArithLog (True) or Shift (False)
 
-        if (op == "000000"):        # translate for add, addu, sub, slt, sll
+        # translate for add, addu, sub, slt, sll
+        if (op == "000000"):
             rs = binary[6:11]
             rt = binary[11:16]
             rd = binary[16:21]
@@ -140,65 +155,100 @@ def Simulate():
             funct = binary[26:32]
             opCode = getInstr(funct)
 
-            # funct rd, rs, rt
-            # newLine = opCode + " " + dec2regi(int(rd, 2)) + ", " + dec2regi(int(rs, 2)) + ", " + dec2regi(int(rt, 2))
-            # oFile.write(newLine)
-
             #updates the registers
             if (opCode == "addu"):
                 Register[int(rd,2)] = Register[int(rs,2)] + Register[int(rt,2)]
+
+            elif (opCode == "add"):
+                Register[int(rd,2)] = Register[int(rs,2)] + Register[int(rt,2)]
+
             elif (opCode == "sub"):
                 Register[int(rd,2)] = Register[int(rs,2)] - Register[int(rt,2)]
+
             elif (opCode == "and"):
                 Register[int(rd,2)] = Register[int(rs,2)] & Register[int(rt,2)]
+
+            elif (opCode == "xor"):
+                Register[int(rd,2)] = Register[int(rs,2)] ^ Register[int(rt,2)]
+
             elif (opCode == "slt"):
-                if (Register[int(rs,2)] < Register[int(rt,2)]):
+                temp1 = Register[int(rs,2)]
+                temp2 = Register[int(rt,2)]
+                if (temp1 > 2147483648):
+                    lol = bin(temp1)[2:]
+                    temp1 = getTwosComp32(lol)
+                if (temp2 > 2147483648):
+                    lol1 = bin(temp2)[2:]
+                    temp2 = getTwosComp32(lol1)
+                #if (Register[int(rs,2)] < Register[int(rt,2)]):
+                if (temp1 < temp2):
                     Register[int(rd,2)] = 1
                 else:
                     Register[int(rd,2)] = 0
-            elif (opCode == "sll"): 
-                Register[int(rd,2)] = Register[int(rt,2)] << int(shamt,2)
-                Register[int(rd,2)] = getTwosComp32(bin(Register[int(rd,2)])[2:])
-                rSyntax = False
-            elif (opCode == "srl"): 
-                
-                Register[int(rd,2)] = Register[int(rt,2)] >> int(shamt,2)
+                #print("REgisters", Register)
 
+            elif (opCode == "sll"):
+                imm1 = Register[int(rt,2)] << int(shamt,2)
+                print("When imm is smaller than 32: ", Register)
+                if (imm1 < -2147483648):
+                    Register[int(rd,2)] = 0
+
+
+                #intermediate = Register[int(rt,2)] << int(shamt,2)
+                elif (imm1 > 2147483648):
+
+                    #print("imm1 number",imm1)
+                    temp = bin(imm1)[2:]
+                    imm1 = getTwosComp32(temp)
+                    Register[int(rd,2)] = imm1
+                    print("Regaaaisters: ",Register)
+
+                else:
+
+                    Register[int(rd,2)] = imm1
+                rSyntax = False
+
+            elif (opCode == "srl"):
+                Register[int(rd,2)] = Register[int(rt,2)] >> int(shamt,2)
                 temp = bin(Register[int(rd,2)])
+                #print("temp[0]: " + temp[0])
                 if (temp[0] == '-'):
                     Register[int(rd,2)] = abs(Register[int(rd,2)])
 
                     ogBitSize = getBitSize(Register[int(rd,2)])
+                    val = Register[int(rd,2)] ^ 268435455                   # get the
+                    val += 1                                                # two's complement
 
-                    val = Register[int(rd,2)] ^ 268435455           # get two's complement
-                    val += 1 
-
-                    if (ogBitSize > getBitSize(val)):               # check if the two's complement removed leading zeroes
-                        zeroes = ogBitSize - getBitSize(val)        # get the number of missing zeroes
-
+                    if(ogBitSize > getBitSize(val)):                        # check if there are missing zeroes
+                        zeroes = ogBitSize - getBitSize(val)
                         temp = bin(val)[2:]
-
-                        while zeroes != 0:                          # concatanate the missing zeroes
+                        while zeroes!=0:                                    # concatanate the missing zeroes
                             temp = '0' + temp
                             zeroes -= 1
                         temp = '1' + temp
-
-                        # temp = '10' + bin(val)[2:]
-                    #else:
-                    #    temp = '1' + bin(val)[2:]
 
                     Register[int(rd,2)] = int(temp, 2)
 
                 rSyntax = False
 
-            if (rSyntax): 
+            if (rSyntax):
                 # funct rd, rs, rt              ArithLog
                 newLine = opCode + " " + dec2regi(int(rd, 2)) + ", " + dec2regi(int(rs, 2)) + ", " + dec2regi(int(rt, 2))
+                pr = "PC"+ ": " + str(PC) + " "+  opCode + " " + dec2regi(int(rd, 2)) + ", " + dec2regi(int(rs, 2)) + ", " + dec2regi(int(rt, 2))
+                print(pr)
+                #PC = PC + 4
+                #print("Registers contents:", Register)
             else:
                 # funct rd, rt, shamt           Shift
                 newLine = opCode + " " + dec2regi(int(rd, 2)) + ", " + dec2regi(int(rt, 2)) + ", " + str(int(shamt, 2))
-            
-            oFile.write(newLine)
+                pr = "PC"+ ": " + str(PC) + " "+  opCode + " " + dec2regi(int(rd, 2)) + ", " + dec2regi(int(rt, 2)) + ", " + str(int(shamt, 2))
+                print(pr)
+                #PC = PC + 4
+                #print("Registers contents:", Register)
+
+            insertList(PC, newLine)
+            PC += 4
+
         elif (op == "100011" or op == "101011"):      # translate lw or sw
             rs = binary[6:11]
             rt = binary[11:16]
@@ -206,47 +256,133 @@ def Simulate():
 
             # op rt, imm(rs)
             #newLine = getInstr(op) + " " + dec2regi(int(rt, 2)) + ", 0x" + str(hex(int(imm, 2)))[2:].zfill(4)  + "(" + dec2regi(int(rs, 2)) + ")"
-            newLine = getInstr(op) + " " + dec2regi(int(rt, 2)) + "," + str(getTwosComp16(imm))  + "(" + dec2regi(int(rs, 2)) + ")"
-            oFile.write(newLine)
-            
+            if (op == "101011"):
+
+                newLine = getInstr(op) + " " + dec2regi(int(rt, 2)) + "," + str(getTwosComp16(imm))  + "(" + dec2regi(int(rs, 2)) + ")"
+                pr = "PC"+ ": " + str(PC) + " "+  getInstr(op) + " " + dec2regi(int(rt, 2)) + "," + str(getTwosComp16(imm))  + "(" + dec2regi(int(rs, 2)) + ")"
+                print(pr)
+                num = Register[int(rs,2)]
+                im = getTwosComp16(imm)
+                Memory[memoryIndex(num,im)] = Register[int(rt,2)]
+                #PC = PC + 4
+                #print("Registers contents:", Register)
+                print("Memory contents: ", Memory)
+            else:
+                newLine = getInstr(op) + " " + dec2regi(int(rt, 2)) + "," + str(getTwosComp16(imm))  + "(" + dec2regi(int(rs, 2)) + ")"
+                pr = "PC"+ ": " + str(PC) + " "+  getInstr(op) + " " + dec2regi(int(rt, 2)) + "," + str(getTwosComp16(imm))  + "(" + dec2regi(int(rs, 2)) + ")"
+                print(pr)
+                num = Register[int(rs,2)]
+                im = getTwosComp16(imm)
+                print("rs is: ", num)
+                print("imm is: ",im)
+                Register[int(rt,2)] = Memory[memoryIndex(num,im)]
+                #PC = PC + 4
+                #print("Registers contents:", Register)
+                print("Memory contents: ", Memory)
+
+            insertList(PC, newLine)
+            PC += 4
+
         elif (op == "000100" or op == "000101"):                   # translate for beq or bne
             rt = binary[6:11]
             rs = binary[11:16]
             imm = binary[16:32]
 
-            # op rt, rs, imm
             newLine = getInstr(op) + " " + dec2regi(int(rt, 2)) + ", " + dec2regi(int(rs, 2)) + ", " + str(getTwosComp16(imm))
-            oFile.write(newLine)
+            pr = "PC"+ ": " + str(PC) + " "+  getInstr(op) + " " + dec2regi(int(rt, 2)) + ", " + dec2regi(int(rs, 2)) + ", " + str(getTwosComp16(imm))
+            print(pr)
 
-        else:                   # translate for addi, ori
+            insertList(PC, newLine)
+
+            # op rt, rs, imm
+            if (op == "000100"):
+                offset = getTwosComp16(imm)
+                if (Register[int(rs,2)] == Register[int(rt,2)]):
+                    PC = PC + 4 + (4*offset)
+                    #print("Registers contents:", Register)
+                else:
+                    PC = PC + 4
+                    #print("Registers contents:", Register)
+            elif(op == "000101"):
+                offset = getTwosComp16(imm)
+                if (Register[int(rs,2)] != Register[int(rt,2)]):
+                    PC = PC + 4 + (4*offset)
+                    #print("Registers contents:", Register)
+                elif(Register[int(rs,2)] == Register[int(rt,2)]):
+                    PC = PC + 4
+                    #print("Registers contents:", Register)
+
+        else:                                                       # translate for addi, ori, lui
             rs = binary[6:11]
             rt = binary[11:16]
             imm = binary[16:32]
             opCode = getInstr(op)
-            # op rt, rs, imm
-            # newLine = opCode + " " + dec2regi(int(rt, 2)) + ", " + dec2regi(int(rs, 2)) + ", " + str(getTwosComp16(imm))
-            # oFile.write(newLine)
 
-            # updates the registers
+            # updates the registers             op rt, rs, imm
             if ( opCode == "addi"):
-                Register[int(rt,2)] = Register[int(rs,2)] + int(imm,2)
+                Register[int(rt,2)] = Register[int(rs,2)] + getTwosComp16(imm)
                 newLine = opCode + " " + dec2regi(int(rt, 2)) + ", " + dec2regi(int(rs, 2)) + ", " + str(getTwosComp16(imm))
-            if(opCode == "ori"):
-                Register[int(rt,2)] = Register[int(rs,2)] | int(imm,2) 
+                pr = "PC"+ ": " + str(PC) + " "+  opCode + " " + dec2regi(int(rt, 2)) + ", " + dec2regi(int(rs, 2)) + ", " + str(getTwosComp16(imm))
+                print(pr)
+                #PC = PC + 4
+                #print("Registers contents:", Register)
+            elif (opCode == "ori"):
+                Register[int(rt,2)] = Register[int(rs,2)] | int(imm,2)
                 newLine = opCode + " " + dec2regi(int(rt, 2)) + ", " + dec2regi(int(rs, 2)) + ", " + str(int(imm,2))
-            oFile.write(newLine)
+                pr = "PC"+ ": " + str(PC) + " "+  opCode + " " + dec2regi(int(rt, 2)) + ", " + dec2regi(int(rs, 2)) + ", " + str(int(imm,2))
+                print(pr)
+                #PC = PC + 4
+                #print("Registers contents:", Register)
+            elif (opCode == "lui"):
+                imm = getTwosComp16(imm)
+                Register[int(rt, 2)] = imm << 16
+                newLine = opCode + " " + dec2regi(int(rt,2)) + ", " + str(imm)
+                pr = "PC: " + str (PC) + " " + opCode + " " + dec2regi(int(rt,2)) + ", " + str(imm)
+                print(pr)
+                #PC = PC + 4
+                #print("Registers contents:", Register)
 
-        word = ""
-        binary = ""
+            insertList(PC, newLine)
+            PC += 4
+    #print("Memory contents: ", Memory)
+    # Write all instructions to an output file
+    printList.sort()
+    for a, b in printList:
+        oFile.write(str(a) + " " + b)
         oFile.write("\n")
+
     oFile.close()
 
-def main():
 
-    #userResponse = input("Would you like to begin Simulation? Enter yes or no: ")
-    #if (userResponse == "yes" or userResponse == "Yes"):
-    Simulate()
-    #else:
-        #print("GoodBye")
+def main():
+    iFile = open("hex.txt", "r")
+    oFile = open("output.txt.", "w")
+    I  = []
+    binary = ""
+    word = ""
+
+    for line in iFile:
+        if (line == "\n" or line[0] == "#" ):
+            continue
+        if (line == "0x1000ffff"):
+            #prints the register contents
+            print("Registers contents:", Register)
+            print("\nThankYou")
+            exit()
+
+        word = word + line[2:10]        # get each line, but ignore 0x
+
+        for i in word:
+            binary = binary + hex2bin(i)    # convert to binary
+        I.append(binary)
+        #print(I)
+        I.append(0)
+        I.append(0)
+        I.append(0)
+        word = ""
+        binary =""
+    Simulate(I)
+    print("***Simulation finished***")
+
 if __name__== "__main__":
   main()
