@@ -80,12 +80,17 @@
 #0x1000ffff
 0x21ceffff
 0x21290004
-#working fine up untill here
+#0x1000ffff
+#working fine up until here
 0x15c0fff5
+#0x1000ffff
 0x000a5902
+#0x1000ffff#works fine up until here
 0xac0b2000
+#0x1000ffff#works
 0x200a2010
-0x1000ffff
+0x1000ffff #end of part avg hamming weight (done).
+
 
 #part3
 
