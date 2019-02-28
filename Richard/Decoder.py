@@ -1,3 +1,5 @@
+import os
+
 # function for converting hex to binary
 def hex2bin(argument):
     switcher = {
@@ -84,8 +86,8 @@ def getTwosComp16(argument):
 ## Two's complement for 32 bits
 def getTwosComp32(argument):
     if (argument[0] == '1'):
-        val = 4294967295 - int(argument, 2) + 1
-        val = -val
+        num = int(argument, 2)
+        val = -2147483648 + (num - 2147483648)
     else:
         val = int(argument, 2)
     return int(val)
@@ -131,11 +133,12 @@ def Simulate(I):
     funct = ""
     newLine = ""
 
-    Memory = [0 for i in range(1000)]
+    Memory = [0 for i in range(508)]
     PC = 0
 
     finished = False
     while(not(finished)):
+        #os.system('cls')
         Register[0] = 0
         binary = I[PC]
         if (binary == "00010000000000001111111111111111"):   # END instruction
@@ -170,14 +173,37 @@ def Simulate(I):
                 Register[int(rd,2)] = Register[int(rs,2)] ^ Register[int(rt,2)]
 
             elif (opCode == "slt"):
+                if (Register[int(rs,2)] > 2147483648):
+                    Register[int(rs,2)] = getTwosComp32(bin(Register[int(rs,2)])[2:])
+
+                if (Register[int(rt,2)] > 2147483648):
+                    Register[int(rt,2)] = getTwosComp32(bin(Register[int(rt,2)])[2:])
+                
                 if (Register[int(rs,2)] < Register[int(rt,2)]):
                     Register[int(rd,2)] = 1
                 else:
                     Register[int(rd,2)] = 0
+                
+                #if (Register[int(rs,2)] < Register[int(rt,2)]):
+                 #   Register[int(rd,2)] = 1
+                #else:
+                 #   Register[int(rd,2)] = 0
 
             elif (opCode == "sll"):
                 Register[int(rd,2)] = Register[int(rt,2)] << int(shamt,2)
                 rSyntax = False
+
+                if (Register[int(rd,2)] < -2147483648):
+                    Register[int(rd,2)] = 0
+                elif (Register[int(rd,2)] > 2147483648):
+                    temp = bin(Register[int(rd,2)])[2:]
+                    Register[int(rd,2)] = getTwosComp32(temp)
+
+                newLine = opCode + " " + dec2regi(int(rd, 2)) + ", " + dec2regi(int(rt, 2)) + ", " + str(int(shamt, 2))
+                pr = "PC"+ ": " + str(PC) + " "+  opCode + " " + dec2regi(int(rd, 2)) + ", " + dec2regi(int(rt, 2)) + ", " + str(int(shamt, 2))
+                #print(pr)
+                #PC = PC + 4
+                #print("SLL Registers contents:", Register)
 
             elif (opCode == "srl"):
                 Register[int(rd,2)] = Register[int(rt,2)] >> int(shamt,2)
@@ -205,14 +231,14 @@ def Simulate(I):
                 # funct rd, rs, rt              ArithLog
                 newLine = opCode + " " + dec2regi(int(rd, 2)) + ", " + dec2regi(int(rs, 2)) + ", " + dec2regi(int(rt, 2))
                 pr = "PC"+ ": " + str(PC) + " "+  opCode + " " + dec2regi(int(rd, 2)) + ", " + dec2regi(int(rs, 2)) + ", " + dec2regi(int(rt, 2))
-                print(pr)
+                #print(pr)
                 #PC = PC + 4
                 #print("Registers contents:", Register)
             else:
                 # funct rd, rt, shamt           Shift
                 newLine = opCode + " " + dec2regi(int(rd, 2)) + ", " + dec2regi(int(rt, 2)) + ", " + str(int(shamt, 2))
                 pr = "PC"+ ": " + str(PC) + " "+  opCode + " " + dec2regi(int(rd, 2)) + ", " + dec2regi(int(rt, 2)) + ", " + str(int(shamt, 2))
-                print(pr)
+                #print(pr)
                 #PC = PC + 4
                 #print("Registers contents:", Register)
 
@@ -230,23 +256,25 @@ def Simulate(I):
 
                 newLine = getInstr(op) + " " + dec2regi(int(rt, 2)) + "," + str(getTwosComp16(imm))  + "(" + dec2regi(int(rs, 2)) + ")"
                 pr = "PC"+ ": " + str(PC) + " "+  getInstr(op) + " " + dec2regi(int(rt, 2)) + "," + str(getTwosComp16(imm))  + "(" + dec2regi(int(rs, 2)) + ")"
-                print(pr)
+                #print(pr)
                 num = Register[int(rs,2)]
                 im = getTwosComp16(imm)
                 Memory[memoryIndex(num,im)] = Register[int(rt,2)]
                 #PC = PC + 4
-                #print("Registers contents:", Register)
-                print("Memory contents: ", Memory)
-            else:
+                #print("STORE WORD MEMORY INDEX: ", memoryIndex(num,im))
+                #print("SW Registers contents:", Register)
+                #print("SW Memory contents: ", Memory)
+            elif (op == "100011"):
                 newLine = getInstr(op) + " " + dec2regi(int(rt, 2)) + "," + str(getTwosComp16(imm))  + "(" + dec2regi(int(rs, 2)) + ")"
                 pr = "PC"+ ": " + str(PC) + " "+  getInstr(op) + " " + dec2regi(int(rt, 2)) + "," + str(getTwosComp16(imm))  + "(" + dec2regi(int(rs, 2)) + ")"
-                print(pr)
+                #print(pr)
                 num = Register[int(rs,2)]
                 im = getTwosComp16(imm)
                 Register[int(rt,2)] = Memory[memoryIndex(num,im)]
                 #PC = PC + 4
-                #print("Registers contents:", Register)
-                print("Memory contents: ", Memory)
+                #print("LOAD WORD MEMORY INDEX: ", memoryIndex(num,im))
+                #print("LW Registers contents:", Register)
+                #print("LW Memory contents: ", Memory)
 
             insertList(PC, newLine)
             PC += 4
@@ -258,7 +286,7 @@ def Simulate(I):
 
             newLine = getInstr(op) + " " + dec2regi(int(rt, 2)) + ", " + dec2regi(int(rs, 2)) + ", " + str(getTwosComp16(imm))
             pr = "PC"+ ": " + str(PC) + " "+  getInstr(op) + " " + dec2regi(int(rt, 2)) + ", " + dec2regi(int(rs, 2)) + ", " + str(getTwosComp16(imm))
-            print(pr)
+            #print(pr)
 
             insertList(PC, newLine)
             
@@ -267,18 +295,18 @@ def Simulate(I):
                 offset = getTwosComp16(imm)
                 if (Register[int(rs,2)] == Register[int(rt,2)]):
                     PC = PC + 4 + (4*offset)
-                    #print("Registers contents:", Register)
+                    #print("BEQ Registers contents:", Register)
                 else:
                     PC = PC + 4
-                    #print("Registers contents:", Register)
+                    #print("BEQ Registers contents:", Register)
             elif(op == "000101"):
                 offset = getTwosComp16(imm)
                 if (Register[int(rs,2)] != Register[int(rt,2)]):
                     PC = PC + 4 + (4*offset)
-                    #print("Registers contents:", Register)
+                    #print("BNE Registers contents:", Register)
                 elif(Register[int(rs,2)] == Register[int(rt,2)]):
                     PC = PC + 4
-                    #print("Registers contents:", Register)
+                    #print("BNE Registers contents:", Register)
 
         else:                                                       # translate for addi, ori, lui
             rs = binary[6:11]
@@ -291,14 +319,14 @@ def Simulate(I):
                 Register[int(rt,2)] = Register[int(rs,2)] + getTwosComp16(imm)
                 newLine = opCode + " " + dec2regi(int(rt, 2)) + ", " + dec2regi(int(rs, 2)) + ", " + str(getTwosComp16(imm))
                 pr = "PC"+ ": " + str(PC) + " "+  opCode + " " + dec2regi(int(rt, 2)) + ", " + dec2regi(int(rs, 2)) + ", " + str(getTwosComp16(imm))
-                print(pr)
+                #print(pr)
                 #PC = PC + 4
                 #print("Registers contents:", Register)
             elif (opCode == "ori"):
                 Register[int(rt,2)] = Register[int(rs,2)] | int(imm,2)
                 newLine = opCode + " " + dec2regi(int(rt, 2)) + ", " + dec2regi(int(rs, 2)) + ", " + str(int(imm,2))
                 pr = "PC"+ ": " + str(PC) + " "+  opCode + " " + dec2regi(int(rt, 2)) + ", " + dec2regi(int(rs, 2)) + ", " + str(int(imm,2))
-                print(pr)
+                #print(pr)
                 #PC = PC + 4
                 #print("Registers contents:", Register)
             elif (opCode == "lui"):
@@ -306,13 +334,14 @@ def Simulate(I):
                 Register[int(rt, 2)] = imm << 16
                 newLine = opCode + " " + dec2regi(int(rt,2)) + ", " + str(imm)
                 pr = "PC: " + str (PC) + " " + opCode + " " + dec2regi(int(rt,2)) + ", " + str(imm)
-                print(pr)
+                #print(pr)
                 #PC = PC + 4
                 #print("Registers contents:", Register)
             
             insertList(PC, newLine)
             PC += 4
-    #print("Memory contents: ", Memory)
+    print("Registers contents:", Register)
+    print("Memory contents: ", Memory)
     # Write all instructions to an output file
     printList.sort()
     for a, b in printList:
