@@ -233,16 +233,15 @@ def Simulate(I):
                 newLine = opCode + " " + dec2regi(int(rd, 2)) + ", " + dec2regi(int(rs, 2)) + ", " + dec2regi(int(rt, 2))
                 pr = "PC"+ ": " + str(PC) + " "+  opCode + " " + dec2regi(int(rd, 2)) + ", " + dec2regi(int(rs, 2)) + ", " + dec2regi(int(rt, 2))
                 print(pr)
-                instructionCount+=1
             else:
                 # funct rd, rt, shamt           Shift
                 newLine = opCode + " " + dec2regi(int(rd, 2)) + ", " + dec2regi(int(rt, 2)) + ", " + str(int(shamt, 2))
                 pr = "PC"+ ": " + str(PC) + " "+  opCode + " " + dec2regi(int(rd, 2)) + ", " + dec2regi(int(rt, 2)) + ", " + str(int(shamt, 2))
                 print(pr)
-                instructionCount+=1
 
             insertList(PC, newLine)
             PC += 4
+            instructionCount += 1
 
         elif (op == "100011" or op == "101011"):      # translate lw or sw
             rs = binary[6:11]
@@ -254,7 +253,6 @@ def Simulate(I):
                 newLine = getInstr(op) + " " + dec2regi(int(rt, 2)) + "," + str(getTwosComp16(imm))  + "(" + dec2regi(int(rs, 2)) + ")"
                 pr = "PC"+ ": " + str(PC) + " "+  getInstr(op) + " " + dec2regi(int(rt, 2)) + ", " + str(getTwosComp16(imm))  + "(" + dec2regi(int(rs, 2)) + ")"
                 print(pr)
-                instructionCount+=1
                 num = Register[int(rs,2)]
                 im = getTwosComp16(imm)
                 Memory[memoryIndex(num,im)] = Register[int(rt,2)]
@@ -263,13 +261,13 @@ def Simulate(I):
                 newLine = getInstr(op) + " " + dec2regi(int(rt, 2)) + "," + str(getTwosComp16(imm))  + "(" + dec2regi(int(rs, 2)) + ")"
                 pr = "PC"+ ": " + str(PC) + " "+  getInstr(op) + " " + dec2regi(int(rt, 2)) + "," + str(getTwosComp16(imm))  + "(" + dec2regi(int(rs, 2)) + ")"
                 print(pr)
-                instructionCount+=1
                 num = Register[int(rs,2)]
                 im = getTwosComp16(imm)
                 Register[int(rt,2)] = Memory[memoryIndex(num,im)]
 
             insertList(PC, newLine)
             PC += 4
+            instructionCount += 1
 
         elif (op == "000100" or op == "000101"):                   # translate for beq or bne
             rt = binary[6:11]
@@ -279,9 +277,9 @@ def Simulate(I):
             newLine = getInstr(op) + " " + dec2regi(int(rt, 2)) + ", " + dec2regi(int(rs, 2)) + ", " + str(getTwosComp16(imm))
             pr = "PC"+ ": " + str(PC) + " "+  getInstr(op) + " " + dec2regi(int(rt, 2)) + ", " + dec2regi(int(rs, 2)) + ", " + str(getTwosComp16(imm))
             print(pr)
-            instructionCount+=1
 
             insertList(PC, newLine)
+            instructionCount += 1
 
             # op rt, rs, imm
             if (op == "000100"):
@@ -312,14 +310,12 @@ def Simulate(I):
                 newLine = opCode + " " + dec2regi(int(rt, 2)) + ", " + dec2regi(int(rs, 2)) + ", " + str(getTwosComp16(imm))
                 pr = "PC"+ ": " + str(PC) + " "+  opCode + " " + dec2regi(int(rt, 2)) + ", " + dec2regi(int(rs, 2)) + ", " + str(getTwosComp16(imm))
                 print(pr)
-                instructionCount+=1
 
             elif (opCode == "ori"):
                 Register[int(rt,2)] = Register[int(rs,2)] | int(imm,2)
                 newLine = opCode + " " + dec2regi(int(rt, 2)) + ", " + dec2regi(int(rs, 2)) + ", " + str(int(imm,2))
                 pr = "PC"+ ": " + str(PC) + " "+  opCode + " " + dec2regi(int(rt, 2)) + ", " + dec2regi(int(rs, 2)) + ", " + str(int(imm,2))
                 print(pr)
-                instructionCount+=1
                 
             elif (opCode == "lui"):
                 imm = getTwosComp16(imm)
@@ -327,10 +323,10 @@ def Simulate(I):
                 newLine = opCode + " " + dec2regi(int(rt,2)) + ", " + str(imm)
                 pr = "PC: " + str (PC) + " " + opCode + " " + dec2regi(int(rt,2)) + ", " + str(imm)
                 print(pr)
-                instructionCount+=1
 
             insertList(PC, newLine)
             PC += 4
+            instructionCount += 1
 
     print("\nRegister Contents: ", Register)
     print("Memory Array: ", Memory)
