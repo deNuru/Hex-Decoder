@@ -4,9 +4,9 @@ addi $9, $0, 16 # numS = 16
 addi $10,$0, 0 # increment address by 4 bytes
 addi $13, $0, 0 # ctr = 0
 addu $14, $0, $8 # tempS = seed
-addiu $11, $0, 0x000000FF # 00...0011111111
-addiu $17, $0, 0xFF000000 # 1111111100...00
-addiu $18, $0, 0x0000FFFF # 00...1111111111111111
+addu $11, $0, 0x000000FF # 00...0011111111
+addu $17, $0, 0xFF000000 # 1111111100...00
+addu $18, $0, 0x0000FFFF # 00...1111111111111111
 
 do_loop: 	addi $12, $0, 0 # i = 0
 		sw $14, 0x2010($10) # store value $14 into mem address
